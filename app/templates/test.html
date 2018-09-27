@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Data Acquisition and Update</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>{{ form.update_tweets() }}</p>
+        <p>{{ form.crawl_commoncrawl() }}</p>
+    </form>
+{% endblock %}

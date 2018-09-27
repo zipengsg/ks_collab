@@ -1,0 +1,9 @@
+Libraries:
+twitter-scraper
+news-please
+awscli
+
+cmd in administrator access:
+assoc .py=pyautofile
+ftype pyautofile="C:\Users\Hunter Zhao\AppData\Local\Programs\Python\Python36\python.exe" "%1" %*
+
