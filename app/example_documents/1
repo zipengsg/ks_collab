@@ -1,0 +1,5 @@
+Word embedding is the collective name for a set of language modeling and feature learning techniques in natural language processing (NLP) where words or phrases from the vocabulary are mapped to vectors of real numbers. Conceptually it involves a mathematical embedding from a space with one dimension per word to a continuous vector space with a much lower dimension.
+
+Methods to generate this mapping include neural networks,[1] dimensionality reduction on the word co-occurrence matrix,[2][3][4] probabilistic models,[5] explainable knowledge base method,[6] and explicit representation in terms of the context in which words appear.[7]
+
+Word and phrase embeddings, when used as the underlying input representation, have been shown to boost the performance in NLP tasks such as syntactic parsing[8] and sentiment analysis.[9]
