@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, TestingButtonsForm
-from app.scrapers import Twitter_Scraper, Commoncrawl_Scraper
+from app.scrapers import Twitter_Scraper, Commoncrawl_Scraper, NewsAPI_API
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post, Topic, Article, Expert, TermMap
 from werkzeug.urls import url_parse
@@ -65,14 +65,24 @@ def test():
     form = TestingButtonsForm()
     twitter_scraper = Twitter_Scraper()
     commoncrawl_scraper = Commoncrawl_Scraper()
+    newsAPI_API = NewsAPI_API()
     if form.validate_on_submit():
         if form.update_tweets.data:
             print('updating tweets')
             twitter_scraper.update_source()
         
         if form.crawl_commoncrawl.data:
-            print('crawl commoncrawl')
+            print('crawling commoncrawl')
             commoncrawl_scraper.crawl_source()
+        
+        if form.request_newsAPI.data:
+            print('requesting newsAPI')
+            newsAPI_API.request_source(form.newsAPI_keyword_field.data, int(form.newsAPI_max_pages_field.data))
+
+        if form.update_newsAPI.data:
+            print('updating newsAPI')
+            newsAPI_API.update_source()
+
         return redirect(url_for('test'))
 
     return render_template('test.html', title='Test', form=form)

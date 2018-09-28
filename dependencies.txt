@@ -2,8 +2,16 @@ Libraries:
 twitter-scraper
 news-please
 awscli
+newsapi-python
 
 cmd in administrator access:
 assoc .py=pyautofile
 ftype pyautofile="C:\Users\Hunter Zhao\AppData\Local\Programs\Python\Python36\python.exe" "%1" %*
 
+in commoncrawl_extractor.py:
+AttributeError: 'NewsArticle' object has no attribute 'publish_date' 
+It should be checked whether the attribute is existing before accessing "article.publish_date".
+Add:
+if not hasattr(article, "publish_date"):
+    return None
+to the beginning of function

@@ -6,5 +6,21 @@
         {{ form.hidden_tag() }}
         <p>{{ form.update_tweets() }}</p>
         <p>{{ form.crawl_commoncrawl() }}</p>
+        <p>
+            {{ form.newsAPI_keyword_field.label }}<br>
+            {{ form.newsAPI_keyword_field(size=32) }}<br>
+            {% for error in form.newsAPI_keyword_field.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+
+            {{ form.newsAPI_max_pages_field.label }}<br>
+            {{ form.newsAPI_max_pages_field(size=32) }}<br>
+            {% for error in form.newsAPI_max_pages_field.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+
+            {{ form.request_newsAPI() }}
+        </p>
+        <p>{{ form.update_newsAPI() }}</p>
     </form>
 {% endblock %}

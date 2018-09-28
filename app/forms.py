@@ -30,5 +30,10 @@ class RegistrationForm(FlaskForm):
 class TestingButtonsForm(FlaskForm):
     update_tweets = SubmitField('Update Tweets')
     crawl_commoncrawl = SubmitField('Crawl CommonCrawl')
-    
+
+    newsAPI_keyword_field = StringField('Keywords')
+    newsAPI_max_pages_field = StringField('Max Pages')
+    request_newsAPI = SubmitField('Request NewsAPI')
+
+    update_newsAPI = SubmitField('Update NewsAPI')
     

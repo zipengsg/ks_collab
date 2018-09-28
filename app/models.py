@@ -60,6 +60,7 @@ class Article(db.Model):
     article_author = db.Column(db.String(64), index=True)
     article_publishdate = db.Column(db.DateTime, index=True)
     article_wordcount = db.Column(db.Integer)
+    article_title = db.Column(db.String(), index=True)
     article_summary = db.Column(db.String(1000))
     article_fulltext = db.Column(db.String())
     article_url = db.Column(db.String(128), index=True)
