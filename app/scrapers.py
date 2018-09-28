@@ -2,8 +2,11 @@ from app import db
 from app.models import User, Post, Topic, Article, Expert, TermMap
 from twitter_scraper import get_tweets
 from newsplease.crawler import commoncrawl_crawler as commoncrawl_crawler
+from newsplease import NewsPlease
 from newsapi import NewsApiClient
 from datetime import datetime
+from sqlalchemy import and_, or_
+from contextlib import suppress
 import hashlib
 import json
 import logging
@@ -71,7 +74,8 @@ class NewsAPI_API():
     ############# Config #############
     file_dir = './newsapi_download_articles/'
     # my_q = 'oscar' # defined in front-end stringfield
-    my_sources = 'abc-news, bbc-news, business-insider, bloomberg, cbs-news, \
+    # bloomberg has anti-crawl
+    my_sources = 'abc-news, bbc-news, business-insider, cbs-news, \
                 cbs-news, cnn, espn, fox-news, fox-sports, \
                 ign, msnbc, national-geographic, politico, rt, \
                 techcrunch, the-economist, the-new-york-times, the-wall-street-journal, wired'
@@ -138,7 +142,7 @@ class NewsAPI_API():
 
 
 #============================================= BELOW DOES NOT WORK PROPERLY ====================================================
-class Commoncrawl_Scraper():
+class Newsplease_Scraper():
 
     ############ CONFIG ############
     # download dir for warc files
@@ -234,5 +238,23 @@ class Commoncrawl_Scraper():
                                                 continue_process=my_continue_process)
     
     
-    def update_source(self):
-        print()
+    def crawl_newsAPI_fulltext(self):
+        articles = Article.query.filter(and_(Article.article_url!=None,Article.article_fulltext==None)).all()
+        n = 1
+        nmax = 4000
+        for article in articles:
+            with suppress(Exception):
+                newsplease_article = NewsPlease.from_url(article.article_url)
+                article.article_fulltext = newsplease_article.text
+                article.article_wordcount = len(newsplease_article.text.split(" "))
+                print(n)
+                print(article.article_url)
+                print(newsplease_article.title)
+                print(newsplease_article.text)
+                print('-----------------')
+            db.session.flush()
+            n = n+1
+            if n > nmax:
+                break
+        db.session.commit()
+        

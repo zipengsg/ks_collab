@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <h1>Utilities</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>{{ form.remove_fulltext_duplicates() }}</p>
+        <p>{{ form.remove_url_duplicates() }}</p>
+    </form>
     <h1>Data Acquisition and Update</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}
@@ -22,5 +28,6 @@
             {{ form.request_newsAPI() }}
         </p>
         <p>{{ form.update_newsAPI() }}</p>
+        <p>{{ form.crawl_fulltext_for_newsAPI() }}</p>
     </form>
 {% endblock %}

@@ -28,6 +28,11 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('Please use a different email address.')
 
 class TestingButtonsForm(FlaskForm):
+    # utilities
+    remove_fulltext_duplicates = SubmitField('Remove Fulltext Duplicates')
+    remove_url_duplicates = SubmitField('Remove URL Duplicates')
+
+    # data collection
     update_tweets = SubmitField('Update Tweets')
     crawl_commoncrawl = SubmitField('Crawl CommonCrawl')
 
@@ -36,4 +41,6 @@ class TestingButtonsForm(FlaskForm):
     request_newsAPI = SubmitField('Request NewsAPI')
 
     update_newsAPI = SubmitField('Update NewsAPI')
+    crawl_fulltext_for_newsAPI = SubmitField('Crawl Content for NewsAPI')
+
     

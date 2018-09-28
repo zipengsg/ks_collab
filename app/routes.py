@@ -1,7 +1,8 @@
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, TestingButtonsForm
-from app.scrapers import Twitter_Scraper, Commoncrawl_Scraper, NewsAPI_API
+from app.scrapers import Twitter_Scraper, Newsplease_Scraper, NewsAPI_API
+from app.utilities import Database_Cleaner
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post, Topic, Article, Expert, TermMap
 from werkzeug.urls import url_parse
@@ -64,8 +65,10 @@ def register():
 def test():
     form = TestingButtonsForm()
     twitter_scraper = Twitter_Scraper()
-    commoncrawl_scraper = Commoncrawl_Scraper()
+    newsplease_scraper = Newsplease_Scraper()
     newsAPI_API = NewsAPI_API()
+    database_cleaner = Database_Cleaner()
+
     if form.validate_on_submit():
         if form.update_tweets.data:
             print('updating tweets')
@@ -73,7 +76,7 @@ def test():
         
         if form.crawl_commoncrawl.data:
             print('crawling commoncrawl')
-            commoncrawl_scraper.crawl_source()
+            newsplease_scraper.crawl_source()
         
         if form.request_newsAPI.data:
             print('requesting newsAPI')
@@ -82,6 +85,18 @@ def test():
         if form.update_newsAPI.data:
             print('updating newsAPI')
             newsAPI_API.update_source()
+
+        if form.crawl_fulltext_for_newsAPI.data:
+            print('crawling content for newsAPI')
+            newsplease_scraper.crawl_newsAPI_fulltext()
+            
+        if form.remove_fulltext_duplicates.data:
+            print('removing fulltext duplicates')
+            database_cleaner.remove_fulltext_duplicates()
+        
+        if form.remove_url_duplicates.data:
+            print('removing url duplicates')
+            database_cleaner.remove_url_duplicates()
 
         return redirect(url_for('test'))
 
