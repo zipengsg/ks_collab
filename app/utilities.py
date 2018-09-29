@@ -1,7 +1,7 @@
-from app import db
-from app.models import User, Post, Topic, Article, Expert, TermMap
 from datetime import datetime
 from sqlalchemy import and_, or_
+from app import db
+from app.models import User, Post, Topic, Article, Expert, TermMap
 
 class Database_Cleaner():
     def remove_fulltext_duplicates(self):

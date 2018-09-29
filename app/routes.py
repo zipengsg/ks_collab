@@ -1,11 +1,11 @@
 from flask import render_template, flash, redirect, url_for, request
+from flask_login import current_user, login_user, logout_user, login_required
+from werkzeug.urls import url_parse
 from app import app, db
+from app.models import User, Post, Topic, Article, Expert, TermMap
 from app.forms import LoginForm, RegistrationForm, TestingButtonsForm
 from app.scrapers import Twitter_Scraper, Newsplease_Scraper, NewsAPI_API
 from app.utilities import Database_Cleaner
-from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User, Post, Topic, Article, Expert, TermMap
-from werkzeug.urls import url_parse
 
 @app.route('/')
 @app.route('/index')

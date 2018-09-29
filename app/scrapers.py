@@ -1,5 +1,3 @@
-from app import db
-from app.models import User, Post, Topic, Article, Expert, TermMap
 from twitter_scraper import get_tweets
 from newsplease.crawler import commoncrawl_crawler as commoncrawl_crawler
 from newsplease import NewsPlease
@@ -13,8 +11,21 @@ import logging
 import os
 import re
 
+from app import db
+from app.models import User, Post, Topic, Article, Expert, TermMap
+
 class Twitter_Scraper():
-    
+    """
+    Twitter_Scraper invokes the open-source twitter_scraper package which links to Twitter's frontend API.
+    The class contains a list of hard-coded Twitter handles that we wish to extract Tweets from.
+    This class is one of the ones used to obtain test data for the MVP.
+    https://github.com/kennethreitz/twitter-scraper
+    """
+    # Sets the maximum number of pages of Tweets to scrape
+    # Note that scraper may yield an error if it cannot find the specified number of pages of existing Tweets
+    max_pages = 5 
+
+    # List of Twitter handles; do not include the @ before the name
     twitter_users = list()
     twitter_users.append("JoeBiden")
     twitter_users.append("BillClinton")
@@ -24,9 +35,16 @@ class Twitter_Scraper():
     twitter_users.append("RepAdamSchiff")
     twitter_users.append("BillGates")
 
-    # currently throws an exception if twitter account is invalid or if there are too few tweets
-    # may need to make the function more robust
-    def update_source(self, twitter_users=twitter_users):
+    def update_source(self, twitter_users=twitter_users, max_pages=max_pages):
+        """
+        Calling update_source will run the Twitter Scraper and update the database with latest Tweets from hard-coded handles.
+        If a new handle is included, obtain all Tweets up to max_pages
+        Otherwise, update database with new Tweets since last update
+
+        Currently throws an exception if twitter account is invalid or if there are too few tweets
+        May need to make the function more robust
+        """
+        # Create/recall a marker in the database used to identify last update time
         last_update_article = Article.query.filter_by(article_author='twitter_last_update').first()
         if last_update_article is None:
             print('did not find last_update')
@@ -42,7 +60,7 @@ class Twitter_Scraper():
         
         for user in twitter_users:
             print(user)
-            tweets = get_tweets(user, pages=5)
+            tweets = get_tweets(user, pages=max_pages)
             user_sample_article = Article.query.filter_by(article_author=user).first()
             # if twitter user is already in database, update database with only new tweets by that user
             if user_sample_article is not None:
@@ -66,15 +84,27 @@ class Twitter_Scraper():
         db.session.commit()
         print('twitter source updated!')
 
-# NewsAPI key: fa676399ed04400d851b69e911c70921
 class NewsAPI_API():
-
+    """
+    NewsAPI_API invokes the open-source newsapi package which is a Python wrapper for NewsAPI's API to download articles.
+    NewsAPI requires an API key for all users, and contains restrictions on query specificity and number of articles 
+        returned at a time.
+    For the "Developers" plan, NewsAPI does not provide fulltext. The open-source newsplease package is used to enrich
+        data obtained through NewsAPI by scraping each site based on URL.
+    NewsAPI returns data for each query in json format
+    """
+    # Unique API key used to make requests from NewsAPI
     api = NewsApiClient(api_key='fa676399ed04400d851b69e911c70921')
 
-    ############# Config #############
+    # Directory to store returned json files
     file_dir = './newsapi_download_articles/'
-    # my_q = 'oscar' # defined in front-end stringfield
-    # bloomberg has anti-crawl
+
+    # Keyword constraint, now defined in front-end StringField
+    # my_q = 'oscar' 
+
+    # Chosen list of sources. Note that the following sources have anti-crawl:
+    #   bloomberg
+    # Find additional source names here: https://newsapi.org/sources
     my_sources = 'abc-news, bbc-news, business-insider, cbs-news, \
                 cbs-news, cnn, espn, fox-news, fox-sports, \
                 ign, msnbc, national-geographic, politico, rt, \
@@ -83,10 +113,9 @@ class NewsAPI_API():
     my_from = None
     my_to = '2018-09-26' #YYYY-MM-DD
     my_language = 'en'
-    my_sort_by = 'relevancy' #publishedAt, popularity, relevancy
-    my_page_size = 100
-    # max_pages = 3 # defined in front-end stringfield
-    ############# End Config #########
+    my_sort_by = 'relevancy' # publishedAt, popularity, relevancy
+    my_page_size = 100 # max page size is 100
+    # max_pages = 3 # defined in front-end StringField
 
     def request_source(self, my_q, max_pages, 
                         file_dir=file_dir,
@@ -98,9 +127,12 @@ class NewsAPI_API():
                         my_language=my_language,
                         my_sort_by=my_sort_by,
                         my_page_size=my_page_size):
-
+        """
+        request_source makes an API request to NewsAPI based on specified filtering criteria and saves the returned json
+            file to file_dir
+        """
         cur_page = 1
-        total_results = 105
+        total_results = 105 # since max page size is 100, use something slightly larger than 100 to initialize
         while cur_page*my_page_size < total_results and cur_page <= max_pages:
             all_articles = api.get_everything(q=my_q,
                                             sources=my_sources,
@@ -121,6 +153,12 @@ class NewsAPI_API():
 
     def update_source(self, 
                         file_dir=file_dir):
+        """
+        update_source goes through every file in the directory that stores NewsAPI's output json files and updates
+            the Article table with all available information.
+        update_source does not pull fulltext from the json files, since fulltext from NewsAPI is truncated.
+        update_source checks the Article table for duplicate URLs before adding a new entry
+        """
         for filename in os.listdir(file_dir):
             if(filename.endswith('.json')):
                 with open(file_dir+filename) as json_data:
@@ -134,6 +172,9 @@ class NewsAPI_API():
                                             article_publishdate=publishdate, article_wordcount=None, article_title=element['title'], \
                                             article_summary=None, article_fulltext=None, article_url=element['url'])
                         db.session.add(article)
+                # Flush after parsing each json file to ensure no duplicates are added across files
+                # Articles within each file assumed to be unique based on NewsAPI's output specifications
+                db.session.flush()
         db.session.commit()
         print('newsAPI sources updated!')
 
@@ -143,7 +184,12 @@ class NewsAPI_API():
 
 #============================================= BELOW DOES NOT WORK PROPERLY ====================================================
 class Newsplease_Scraper():
-
+    """
+    Newsplease_Scraper invokes the open-source newsplease package which is a generalized scraper for news websites.
+    Newsplease_Scraper also contains functionality to extract and scrape commoncrawl data (see commoncrawl.org), 
+        but it does not work very well.
+    https://github.com/fhamborg/news-please
+    """
     ############ CONFIG ############
     # download dir for warc files
     my_local_download_dir_warc = './cc_download_warc/'
@@ -192,6 +238,10 @@ class Newsplease_Scraper():
         my_delete_warc_after_extraction=my_delete_warc_after_extraction,
         my_continue_process=my_continue_process):
 
+        """
+        crawl_source is a function that downloads, extracts, scrapes and generates json files from the commoncrawl repository
+        Code included below is mostly copy-pasted from examples provided by the package developer
+        """
         def __get_pretty_filepath(path, article):
             """
             Pretty might be an euphemism, but this function tries to avoid too long filenames, while keeping some structure.
@@ -239,9 +289,13 @@ class Newsplease_Scraper():
     
     
     def crawl_newsAPI_fulltext(self):
+        """
+        crawl_newsAPI_fulltext enriches existing rows in Article table that do not have fulltext by going to the
+            associated URL, scraping the site, then obtaining the fulltext of the article and saving it to the database
+        """
         articles = Article.query.filter(and_(Article.article_url!=None,Article.article_fulltext==None)).all()
         n = 1
-        nmax = 4000
+        nmax = 4000 # number of articles to be processed at a time
         for article in articles:
             with suppress(Exception):
                 newsplease_article = NewsPlease.from_url(article.article_url)

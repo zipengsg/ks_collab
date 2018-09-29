@@ -3,6 +3,7 @@ twitter-scraper
 news-please
 awscli
 newsapi-python
+pylint
 
 cmd in administrator access:
 assoc .py=pyautofile

@@ -1,7 +1,7 @@
 from datetime import datetime
-from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from app import db, login
 
 @login.user_loader
 def load_user(id):
@@ -73,6 +73,9 @@ class Expert(db.Model):
     expert_affiliation = db.Column(db.String(128), index=True)
 
     topics = db.relationship("Topic", secondary=topic_expert_at, back_populates="experts")
+
+class Source(db.Model):
+    pass
 
 class TermMap(db.Model):
     id = db.Column(db.Integer, primary_key=True)
