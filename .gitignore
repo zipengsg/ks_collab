@@ -103,6 +103,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-app.db
+*.db
 cc_download_warc
 References
+setup
