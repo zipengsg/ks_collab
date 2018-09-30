@@ -5,6 +5,7 @@ import re
 import nltk
 import collections
 from sklearn.mixture import GaussianMixture
+import sqlite3
 print("done importing");
 
 # this stuff should be replaced by nltk things
@@ -23,7 +24,7 @@ class Document:
 		temp = re.sub("[^a-z\s]", "", temp); # remove non-abc
 		tokens = nltk.word_tokenize(temp);
 		self.doc_len = len(tokens);
-		filtered = [w for w in tokens if not w in nltk.corpus.stopwords.words("english")];
+		filtered = [w for w in tokens if not w in nltk.corpus.stopwords.words("english") and not w.startswith("http")];
 		stemmed = [nltk.stem.porter.PorterStemmer().stem(w) for w in filtered];
 		self.wl = stemmed;
 
@@ -61,8 +62,9 @@ class Everything:
 	def _compute_tf(self):
 		def normed_tf(doc_wc):
 			result = {};
+			doc_total_words = sum([doc_wc[w] for w in doc_wc]);
 			for w in doc_wc:
-				result[w] = np.log(1. + doc_wc[w]);
+				result[w] = doc_wc[w] / doc_total_words;
 			return result;
 
 		for d in self.dl:
@@ -129,7 +131,7 @@ class Everything:
 		# this will also need some dimension reduction
 
 		# this should later be inferred from data
-		ntopics = 2;
+		ndim = 30;
 
 		# now the question is: to normalize or not to normalize
 		normalize = True;
@@ -143,15 +145,21 @@ class Everything:
 			inv_norm_matrix = inv_norm_matrix.tocsc();
 			normed_tfidf = tfidf_col * inv_norm_matrix;
 
+		ndim = min(min(normed_tfidf.shape)-1, ndim);
+		[_, s, vt] = sparse.linalg.svds(normed_tfidf, k=ndim, which="LM");
+		s = np.diag(s);
+		reduced_tfidf = s @ vt;
+
 		# one vector per row
-		em_input_data = normed_tfidf.transpose().toarray();
+		em_input_data = reduced_tfidf.transpose();
+		ntopics = int(ndim / 2);
 		self.classifier = GaussianMixture(n_components=ntopics, covariance_type="full");
 		self.classifier.fit(em_input_data);
 
 		self.doc_class = self.classifier.predict(em_input_data);
 
 # test code
-def test_topic_extraction():
+def test1_topic_extraction():
 	e = Everything();
 
 	doc_names = ["tfidf", "word embedding", "china", "occurence matrix", "Vector space", "DDay"];
@@ -178,4 +186,72 @@ def test_topic_extraction():
 		print(sorted_doc_tfidf[:10]);
 		print("\n");
 
-test_topic_extraction();
+def test2_topic_extraction():
+	max_num_art = 1000;
+
+	e = Everything();
+
+	conn = sqlite3.connect("../app.db");
+	c = conn.cursor();
+
+	full_texts = c.execute("select article_fulltext,id,article_title from article where id > 1 and source_name != 'Twitter' and article_title is not null;");
+	for t in list(full_texts)[:max_num_art]:
+		cont = t[0];
+		if cont == None:
+			continue;
+		if len(cont) == 0:
+			continue;
+		print("processing docid %s..." % t[1]);
+		d = Document(t[2], cont);
+		e.add(d);
+	conn.close();
+
+	print("computing tfidf...");
+	e.compute_tfidf();
+
+	print("clustering...");
+	e.cluster();
+
+	# test
+	grouped_docs = {};
+	class_top_words = {};
+	class_titles = {};
+	max_c = -1;
+	for i in range(len(e.dl)):
+		c = e.doc_class[i];
+		doc_tfidf = e.tfidf_list[i];
+		sorted_doc_tfidf = sorted(doc_tfidf.items(), key=lambda x: x[1], reverse=True);
+		top_words = [t[0] for t in sorted_doc_tfidf[:2]];
+		if c in grouped_docs:
+			grouped_docs[c].append(i);
+		else:
+			grouped_docs[c] = [i];
+		if c in class_top_words:
+			class_top_words[c] += (top_words);
+		else:
+			class_top_words[c] = top_words;
+		if c in class_titles:
+			class_titles[c].append(e.dl[i].name);
+		else:
+			class_titles[c] = [e.dl[i].name];
+		if c > max_c:
+			max_c = c;
+
+	for c in range(max_c+1):
+		dl = grouped_docs[c];
+		print("\n=== CLASS %d ===" % c);
+		for i in dl:
+			doc_tfidf = e.tfidf_list[i];
+			sorted_doc_tfidf = sorted(doc_tfidf.items(), key=lambda x: x[1], reverse=True);
+			top_words = [t[0] for t in sorted_doc_tfidf[:8]];
+			print("\n\nTop words: %s\n\nContent: %s" % (" ".join(top_words), e.dl[i].content[:280]));
+			print("\ncluster: %d" % e.doc_class[i]);
+		print("\n");
+
+	for c in range(max_c+1):
+		print("\n=== CLASS %d ===" % c);
+		for title in class_titles[c]:
+			print(" * %s" % title);
+		#print(" ".join(list(set(class_top_words[c]))));
+
+test2_topic_extraction();
