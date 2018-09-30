@@ -107,3 +107,6 @@ venv.bak/
 cc_download_warc
 References
 setup
+
+*.db
+*.swp
