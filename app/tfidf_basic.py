@@ -8,7 +8,6 @@ from sklearn.mixture import GaussianMixture
 import sqlite3
 print("done importing");
 
-# this stuff should be replaced by nltk things
 class Document:
 	def __init__(self, name, content):
 		self.name = name;
@@ -131,7 +130,7 @@ class Everything:
 		# this will also need some dimension reduction
 
 		# this should later be inferred from data
-		ndim = 30;
+		ndim = 20;
 
 		# now the question is: to normalize or not to normalize
 		normalize = True;
@@ -187,7 +186,7 @@ def test1_topic_extraction():
 		print("\n");
 
 def test2_topic_extraction():
-	max_num_art = 1000;
+	max_num_art = 4000;
 
 	e = Everything();
 
@@ -195,7 +194,9 @@ def test2_topic_extraction():
 	c = conn.cursor();
 
 	full_texts = c.execute("select article_fulltext,id,article_title from article where id > 1 and source_name != 'Twitter' and article_title is not null;");
-	for t in list(full_texts)[:max_num_art]:
+	full_texts = list(full_texts);
+	conn.close();
+	for t in full_texts[:min(max_num_art, len(full_texts))]:
 		cont = t[0];
 		if cont == None:
 			continue;
@@ -204,7 +205,6 @@ def test2_topic_extraction():
 		print("processing docid %s..." % t[1]);
 		d = Document(t[2], cont);
 		e.add(d);
-	conn.close();
 
 	print("computing tfidf...");
 	e.compute_tfidf();
@@ -237,19 +237,19 @@ def test2_topic_extraction():
 		if c > max_c:
 			max_c = c;
 
-	for c in range(max_c+1):
-		dl = grouped_docs[c];
-		print("\n=== CLASS %d ===" % c);
-		for i in dl:
-			doc_tfidf = e.tfidf_list[i];
-			sorted_doc_tfidf = sorted(doc_tfidf.items(), key=lambda x: x[1], reverse=True);
-			top_words = [t[0] for t in sorted_doc_tfidf[:8]];
-			print("\n\nTop words: %s\n\nContent: %s" % (" ".join(top_words), e.dl[i].content[:280]));
-			print("\ncluster: %d" % e.doc_class[i]);
-		print("\n");
+	#for c in range(max_c+1):
+		#dl = grouped_docs[c];
+		#print("\n=== CLASS %d ===" % c);
+		#for i in dl:
+			#doc_tfidf = e.tfidf_list[i];
+			#sorted_doc_tfidf = sorted(doc_tfidf.items(), key=lambda x: x[1], reverse=True);
+			#top_words = [t[0] for t in sorted_doc_tfidf[:8]];
+			#print("\n\nTop words: %s\n\nContent: %s" % (" ".join(top_words), e.dl[i].content[:280]));
+			#print("\ncluster: %d" % e.doc_class[i]);
+		#print("\n");
 
 	for c in range(max_c+1):
-		print("\n=== CLASS %d ===" % c);
+		print("\n\n\n=== CLASS %d ===" % c);
 		for title in class_titles[c]:
 			print(" * %s" % title);
 		#print(" ".join(list(set(class_top_words[c]))));
