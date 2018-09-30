@@ -1,0 +1,33 @@
+=== Using word embedding for synonyms in tfidf ===
+In the tfidf, we end up with a score for each word in each document,
+which can be represented as an matrix (nwords x ndocs). Each column
+is now thought of as a vector representation of a document, with similar
+documents having vectors that are close in the vector space. These vectors
+can be normalized and the run through a dimensional reducer (SVD) and an
+expectation maximization alg to cluster the documents.
+
+Word embedding: place words into a large (~200) dimensional vector space, so
+that each vector represents 1 word. Synonyms of a word corresponds to
+nearby vectors. We can calculate a "closeness" of 2 words by their distance
+in the vector space. Then, in calculating the tf score in the tfidf,
+whenever we come across a word, we increase the tf score for not only
+that word but also all its synonyms, weighted with their distance in the
+word embedding space. For example, if we see the word "run", we increase
+"run" by +1, "jog" by 0.8, "walk" by 0.2, etc.
+
+This of course requires a word embedding thing. We can construct our own
+with tensorflow and train on wikipedia for instance. Or try to find
+a pretrained word embedding matrix.
+
+
+
+=== Topic relations ===
+After clustering documents, we essentially end up with many gaussians
+describing the clusters/topics. We can calculate how related one
+topic is to another through their overlap: multiply the gaussians
+for 2 topics and integrate. The integral for a product of 2 gaussians
+should be computed analytically first, and the formula typed up in
+python as a function of the covariance matrices and means (determinants,
+matrix inversions, or something, but DON'T numerically integrate).
+
+Given that the number of topics isn't huge, this shouldn't be too expensive.
