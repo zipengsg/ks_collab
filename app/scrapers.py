@@ -11,7 +11,7 @@ from newsplease import NewsPlease
 from newsapi import NewsApiClient
 from sqlalchemy import and_, or_
 from app import db
-from app.models import Article
+from app.models import Article, Source
 
 # pylint: disable=no-member
 # pylint: disable=singleton-comparison
@@ -63,7 +63,8 @@ class TwitterScraper():
                                           article_title=None,
                                           article_summary=None,
                                           article_fulltext=None,
-                                          article_url=None)
+                                          article_url=None,
+                                          article_status=None)
             db.session.add(last_update_article)
             db.session.commit()
         else:
@@ -88,7 +89,8 @@ class TwitterScraper():
                                           article_title=None,
                                           article_summary=tweet['text'],
                                           article_fulltext=tweet['text'],
-                                          article_url=None)
+                                          article_url=None,
+                                          article_status=None)
                         db.session.add(article)
             # if new twitter user to be followed, update database with older tweets as well
             else:
@@ -102,7 +104,8 @@ class TwitterScraper():
                                       article_title=None,
                                       article_summary=tweet['text'],
                                       article_fulltext=tweet['text'],
-                                      article_url=None)
+                                      article_url=None,
+                                      article_status=None)
                     db.session.add(article)
         last_update = datetime.utcnow()
         last_update_article.article_publishdate = last_update
@@ -187,6 +190,7 @@ class NewsApiApi():
             is truncated.
         update_source checks the Article table for duplicate URLs before adding a new entry
         """
+        n_articles_added = 0
         for filename in os.listdir(file_dir):
             if filename.endswith('.json'):
                 with open(file_dir+filename) as json_data:
@@ -196,21 +200,33 @@ class NewsApiApi():
                     existing_article = Article.query.filter_by(article_url=element['url']).first()
                     if existing_article is None:
                         publishdate = datetime.strptime(element['publishedAt'], '%Y-%m-%dT%H:%M:%SZ')
-                        article = Article(source_type='News',
-                                          source_name=element['source']['name'],
+                        source_type = 'News'
+                        source_name = element['source']['name']
+                        associated_source = Source.query.filter(and_(Source.source_type == source_type,
+                                                                     Source.source_name == source_name)).first()
+                        if associated_source is None:
+                            associated_source = Source(source_type=source_type,
+                                                       source_name=source_name,
+                                                       source_url=None,
+                                                       source_description=None,
+                                                       source_statistics=None)
+                            db.session.add(associated_source)
+                        article = Article(source=associated_source,
                                           article_author=element['author'],
                                           article_publishdate=publishdate,
                                           article_wordcount=None,
                                           article_title=element['title'],
                                           article_summary=None,
                                           article_fulltext=None,
-                                          article_url=element['url'])
+                                          article_url=element['url'],
+                                          article_status=None)
                         db.session.add(article)
+                        n_articles_added = n_articles_added + 1
                 # Flush after parsing each json file to ensure no duplicates are added across files
                 # Articles within each file assumed to be unique based on NewsAPI's output specifications
                 db.session.flush()
         db.session.commit()
-        print('newsAPI sources updated!')
+        print('newsAPI sources updated. ' + str(n_articles_added) + ' new articles added!')
 
 
 class NewspleaseScraper():
@@ -334,9 +350,10 @@ class NewspleaseScraper():
             fulltext of the article and saving it to the database
         """
         # For article filtering against None (Null in database), "is" and "is not" does not work
-        articles = Article.query.filter(and_(Article.article_url != None,Article.article_fulltext == None)).all()
+        articles = Article.query.filter(and_(Article.article_url != None,
+                                             Article.article_fulltext == None)).all()
         n = 1
-        nmax = 4000 # number of articles to be processed at a time
+        nmax = 1000 # number of articles to be processed at a time
         for article in articles:
             with suppress(Exception):
                 newsplease_article = NewsPlease.from_url(article.article_url)
@@ -345,7 +362,7 @@ class NewspleaseScraper():
                 print(n)
                 print(article.article_url)
                 print(newsplease_article.title)
-                print(newsplease_article.text)
+                # print(newsplease_article.text)
                 print('-----------------')
             db.session.flush()
             n = n+1

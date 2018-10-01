@@ -6,12 +6,13 @@
         {{ form.hidden_tag() }}
         <p>{{ form.remove_fulltext_duplicates() }}</p>
         <p>{{ form.remove_url_duplicates() }}</p>
+        <p>{{ form.populate_source_from_article() }}</p>
     </form>
     <h1>Data Acquisition and Update</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}
         <p>{{ form.update_tweets() }}</p>
-        <p>{{ form.crawl_commoncrawl() }}</p>
+        <!--<p>{{ form.crawl_commoncrawl() }}</p>-->
         <p>
             {{ form.newsapi_keyword_field.label }}<br>
             {{ form.newsapi_keyword_field(size=32) }}<br>

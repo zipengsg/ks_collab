@@ -87,8 +87,6 @@ class Article(db.Model):
     Article class shares a many-to-one relationship with Source.
     """
     id = db.Column(db.Integer, primary_key=True)
-    source_type = db.Column(db.String(64))
-    source_name = db.Column(db.String(64), index=True)
     article_author = db.Column(db.String(64), index=True)
     article_publishdate = db.Column(db.DateTime, index=True)
     article_wordcount = db.Column(db.Integer)
@@ -96,6 +94,7 @@ class Article(db.Model):
     article_summary = db.Column(db.String(1000))
     article_fulltext = db.Column(db.String())
     article_url = db.Column(db.String(128), index=True)
+    article_status = db.Column(db.String(128), index=True)
 
     topics = db.relationship("Topic", secondary=topic_article_at, back_populates="articles")
     source_id = db.Column(db.Integer, db.ForeignKey('source.id'))

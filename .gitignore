@@ -106,7 +106,7 @@ venv.bak/
 *.db
 cc_download_warc
 References
-setup
+migrations
 
 *.db
 *.swp

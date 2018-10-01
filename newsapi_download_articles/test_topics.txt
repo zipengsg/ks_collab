@@ -13,3 +13,9 @@ nfl
 nba
 mlb
 sports
+watermelon
+music
+los angeles
+animal
+brexit
+japan

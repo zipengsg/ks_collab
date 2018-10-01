@@ -46,7 +46,7 @@ class TestingButtonsForm(FlaskForm):
 
     # data collection
     update_tweets = SubmitField('Update Tweets')
-    crawl_commoncrawl = SubmitField('Crawl CommonCrawl')
+    crawl_commoncrawl = SubmitField('Crawl CommonCrawl (DO NOT USE)')
 
     newsapi_keyword_field = StringField('Keywords')
     newsapi_max_pages_field = StringField('Max Pages')
@@ -54,5 +54,7 @@ class TestingButtonsForm(FlaskForm):
 
     update_newsapi = SubmitField('Update NewsAPI')
     crawl_fulltext_for_newsapi = SubmitField('Crawl Content for NewsAPI')
+
+    populate_source_from_article = SubmitField('Populate Source table with Existing Articles')
 
     

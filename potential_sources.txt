@@ -1,0 +1,5 @@
+Likely open-source scrapable:
+Wikipedia
+
+Need custom scrapers:
+Encyclopedia Britannica

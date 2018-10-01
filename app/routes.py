@@ -125,6 +125,10 @@ def test():
             print('removing url duplicates')
             database_cleaner.article_remove_url_duplicates()
 
+        if form.populate_source_from_article.data:
+            print('populating source table from existing articles')
+            database_cleaner.populate_source_from_articles()
+
         return redirect(url_for('test'))
 
     return render_template('test.html', title='Test', form=form)
