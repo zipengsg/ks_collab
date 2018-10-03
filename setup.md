@@ -29,7 +29,7 @@ flask
 flask-sqlalchemy
 flask-migrate
 flask-wtf
-wtforms
+flask-login
 python-dotenv
 twitter-scraper
 news-please
@@ -42,8 +42,8 @@ pylint
 
 ## Set `FLASK_APP` environment variable
 ```
-(linux) $ export FLASK_APP=microblog.py
-(windows) $ set FLASK_APP=microblog.py
+(linux) $ export FLASK_APP=kaleidoscope.py
+(windows) $ set FLASK_APP=kaleidoscope.py
 ```
 
 ## Run the server
