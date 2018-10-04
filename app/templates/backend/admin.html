@@ -1,0 +1,96 @@
+{% extends "backend/dashboard.html" %}
+
+{% block content %}
+<div class="container-fluid flex-grow-1 container-p-y">
+
+<h4 class="font-weight-bold py-3 mb-4">
+  <span class="text-muted font-weight-light">Admin /</span> Utilities
+</h4>
+
+
+<div class="card mb-4">
+  <h6 class="card-header">
+    Data Acquisition and Update
+  </h6>
+  <div class="card-body">
+    <div class="nav-tabs-left mb-4">
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a class="nav-link active" data-toggle="tab" href="#twitter">Twitter</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#newsplease">NewsPlease</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#newsapi">NewsAPI</a>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="twitter">
+          <div class="card-body">
+            <p>See server response in javascript console</p>
+            <button type="button" class="btn btn-secondary" onclick="post(this,'/admin/sources/tweets/update', {});">Update</button>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="newsplease">
+          <div class="card-body">
+            <button type="button" class="btn btn-secondary" onclick="post(this,'/admin/sources/newsplease/crawl', {});">Crawl</button>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="newsapi">
+          <div class="card-body">
+            <form id="request-form">
+              <div class="form-group">
+                <label class="form-label">NewsAPI Keyword</label>
+                <input class="form-control" type="text" name="newsapi_keyword">
+              </div>
+              <div class="form-group">
+                <label class="form-label">NewsAPI Max Pages</label>
+                <input class="form-control" type="text" name="newsapi_max_pages">
+              </div>
+              <div class="form-group">
+                <button type="button" class="btn btn-primary" onclick="post(this,'/admin/sources/newsapi/request', $('#request-form').serialize());">Request</button>
+              </div>
+              <div class="form-group">
+                <button type="button" class="btn btn-secondary" onclick="post(this,'/admin/sources/newsapi/update', {});">Update</button>
+                <button type="button" class="btn btn-secondary" onclick="post(this,'/admin/sources/newsapi/crawl', {});">Crawl</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="card mb-4">
+  <h6 class="card-header">
+    Database utilities
+  </h6>
+  <div class="card-body">
+    <form>
+      <div class="form-group">
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary" onclick="post(this,'/admin/database/articles/remove-fulltext-duplicates', {});">Remove fulltext duplicates</button>
+          <button type="button" class="btn btn-secondary" onclick="post(this,'/admin/database/articles/remove-url-duplicates', {});">Remove url duplicates</button>
+          <button type="button" class="btn btn-secondary" onclick="post(this,'/admin/database/articles/populate-source', {});">Populate source</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+</div>    
+
+<script>
+function post(self, url, data) {
+  $(self).addClass('disabled');
+  $.post({ url: url, data: data, dataType: 'json' }).done(function(response, status) {
+    console.log(response, status);
+    $(self).removeClass('disabled');
+  });
+};
+</script>
+
+{% endblock %}

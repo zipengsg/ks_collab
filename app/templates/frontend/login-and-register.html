@@ -1,0 +1,94 @@
+{% extends "frontend/authentication.html" %}
+
+{% block content %}
+
+  <div class="authentication-wrapper authentication-4 px-4">
+    <div class="authentication-inner py-5">
+
+      <!-- Logo -->
+      <div class="d-flex justify-content-center align-items-center mb-5">
+        <div class="ui-w-60">
+          <div class="w-100 position-relative" style="padding-bottom: 54%">
+            <a href="/"><img src="/assets/img/logo.png" class="position-absolute" style="width:4rem"></a>
+          </div>
+        </div>
+      </div>
+      <!-- / Logo -->
+
+      <div class="card">
+        <div class="row no-gutters row-bordered">
+
+          <!-- Login -->
+          <div class="col-md-6">
+            <h5 class="text-center text-muted font-weight-normal py-4 px-4 px-sm-5 m-0">Login to Your Account</h5>
+            <hr class="border-light m-0">
+
+            <div class="px-4 px-sm-5 pt-4 pb-5 pb-sm-5">
+
+              <!-- Login form -->
+              <form>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="text" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label class="form-label d-flex justify-content-between align-items-end">
+                    <div>Password</div>
+                    <a href="javascript:void(0)" class="d-block small">Forgot password?</a>
+                  </label>
+                  <input type="password" class="form-control">
+                </div>
+                <div class="d-flex justify-content-between align-items-center m-0">
+                  <label class="custom-control custom-checkbox m-0">
+                    <input type="checkbox" class="custom-control-input">
+                    <span class="custom-control-label">Remember me</span>
+                  </label>
+                  <button type="button" class="btn btn-primary">Sign In</button>
+                </div>
+              </form>
+              <!-- / Login form -->
+
+            </div>
+          </div>
+          <!-- / Login -->
+
+          <!-- Register -->
+          <div class="col-md-6">
+            <h5 class="text-center text-muted font-weight-normal py-4 px-4 px-sm-5 m-0">Create an Account</h5>
+            <hr class="border-light m-0">
+
+            <div class="px-4 px-sm-5 pt-4 pb-5 pb-sm-5">
+
+              <!-- Register form -->
+              <form>
+                <div class="form-group">
+                  <label class="form-label">Your name</label>
+                  <input type="text" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Your email</label>
+                  <input type="text" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Password</label>
+                  <input type="password" class="form-control">
+                </div>
+                <button type="button" class="btn btn-primary btn-block mt-4">Sign Up</button>
+                <div class="text-light small mt-4">
+                  By clicking "Sign Up", you agree to our
+                  <a href="javascript:void(0)">terms of service and privacy policy</a>. We’ll occasionally send you account related emails.
+                </div>
+              </form>
+              <!-- / Register form -->
+
+            </div>
+          </div>
+          <!-- / Register -->
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+{% endblock %}
