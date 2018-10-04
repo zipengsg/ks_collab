@@ -46,6 +46,13 @@ pylint
 (windows) $ set FLASK_APP=kaleidoscope.py
 ```
 
+## Set `FLASK_DEBUG` environment variable
+```
+(linux) $ export FLASK_DEBUG=1
+```
+This reloads the app when you modify a file.
+
+
 ## Run the server
 ```
 $ flask run
