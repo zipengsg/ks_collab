@@ -2,15 +2,20 @@
 
 ## Security
 
-Creating a new user:
+Creating a new user
 ```
-create user <username>@<hostname> identified by <password>;
+create user "<username>"@"<hostname>" identified by "<password>";
 ```
-`<hostname>` can be `'%'` to allow access from all computers.
+`<hostname>` can be `%` to allow access from all computers.
 
-Deleting a user:
+Deleting a user
 ```
 drop user <username>;
+```
+
+List all users
+```
+select User from mysql.user;
 ```
 
 To show permissions for a user
